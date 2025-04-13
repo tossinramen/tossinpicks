@@ -104,6 +104,7 @@ export default function SchedulePage() {
                   </tr>
                 </thead>
                 <tbody>
+                    
                   {games.map((game) => {
                     const utcDate = new Date(game.date);
                     const estDate = new Date(utcDate.toLocaleString('en-US', { timeZone: 'America/New_York' }));
