@@ -1,14 +1,13 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import React from 'react';
 import {
   ATL, BOS, BKN, CHA, CHI, CLE, DAL, DEN, DET,
   GSW, HOU, IND, LAC, LAL, MEM, MIA, MIL, MIN, NOP,
   NYK, OKC, ORL, PHI, PHX, POR, SAC, SAS, TOR, UTA, WAS
 } from 'react-nba-logos';
 import Header from '@/components/Header';
-import Sidebar from '@/components/Sidebar'; // ✅ Make sure this path is correct
+import Sidebar from '@/components/Sidebar';
 
 interface Game {
   id: number;
@@ -27,12 +26,17 @@ const teamComponents: Record<string, React.ElementType> = {
   "Milwaukee Bucks": MIL, "Minnesota Timberwolves": MIN, "New Orleans Pelicans": NOP,
   "New York Knicks": NYK, "Oklahoma City Thunder": OKC, "Orlando Magic": ORL, "Philadelphia 76ers": PHI,
   "Phoenix Suns": PHX, "Portland Trail Blazers": POR, "Sacramento Kings": SAC,
-  "San Antonio Spurs": SAS, "Toronto Raptors": TOR, "Utah Jazz": UTA, "Washington Wizards": WAS,
+  "San Antonio Spurs": SAS, "Toronto Raptors": TOR, "Utah Jazz": UTA, "Washington Wizards": WAS
 };
 
 export default function SchedulePage() {
   const [gamesByDate, setGamesByDate] = useState<Record<string, Game[]>>({});
   const [activeSport, setActiveSport] = useState('NBA');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true); // 👈 default open
+
+  const handleMenuClick = () => {
+    setIsSidebarOpen((prev) => !prev); // 👈 toggles
+  };
 
   useEffect(() => {
     const fetchGames = async () => {
@@ -59,9 +63,10 @@ export default function SchedulePage() {
 
   return (
     <div className="min-h-screen flex bg-gray-900 text-white">
-      <Sidebar activeSport={activeSport} setActiveSport={setActiveSport} />
+      <Sidebar activeSport={activeSport} setActiveSport={setActiveSport} isOpen={isSidebarOpen} />
       <div className="flex-1 flex flex-col">
-        <Header />
+        <Header onMenuClick={handleMenuClick} />
+
         <main className="p-8">
           <h1 className="text-4xl font-bold mb-8 text-center">NBA Schedule</h1>
 
@@ -77,14 +82,12 @@ export default function SchedulePage() {
                       <tr>
                         <th className="px-6 py-3">Matchup</th>
                         <th className="px-6 py-3">Location</th>
-                        <th className="px-6 py-3">Date</th>
                       </tr>
                     </thead>
                     <tbody>
                       {games.map((game) => {
-                        const utcDate = new Date(game.date);
                         const estDate = new Date(
-                          utcDate.toLocaleString('en-US', { timeZone: 'America/New_York' })
+                          new Date(game.date).toLocaleString('en-US', { timeZone: 'America/New_York' })
                         );
 
                         const VisitorLogo = teamComponents[game.visitor_team.full_name];
@@ -94,16 +97,15 @@ export default function SchedulePage() {
                           <tr key={game.id} className="border-b border-gray-700 hover:bg-gray-700/30">
                             <td className="px-6 py-4">
                               <div className="flex items-center gap-2 mb-1">
-                                {VisitorLogo && <VisitorLogo size={30} />}
-                                {game.visitor_team.full_name}
+                                {VisitorLogo && <VisitorLogo size={30} />} {game.visitor_team.full_name}
                               </div>
                               <div className="flex items-center gap-2">
-                                {HomeLogo && <HomeLogo size={30} />}
-                                {game.home_team.full_name}
+                                {HomeLogo && <HomeLogo size={30} />} {game.home_team.full_name}
                               </div>
                             </td>
-                            <td className="px-6 py-4 text-gray-400">{game.home_team.full_name} Arena</td>
                             <td className="px-6 py-4 text-gray-400">
+                              {game.home_team.full_name} Arena
+                              <br />
                               {estDate.toLocaleString('en-US', {
                                 dateStyle: 'medium',
                                 timeStyle: 'short',
