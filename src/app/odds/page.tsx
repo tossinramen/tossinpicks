@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   ATL, BOS, BKN, CHA, CHI, CLE, DAL, DEN, DET,
   GSW, HOU, IND, LAC, LAL, MEM, MIA, MIL, MIN, NOP,
@@ -8,37 +8,17 @@ import {
 } from 'react-nba-logos';
 
 const teamComponents: Record<string, React.ElementType> = {
-  "Atlanta Hawks": ATL,
-  "Boston Celtics": BOS,
-  "Brooklyn Nets": BKN,
-  "Charlotte Hornets": CHA,
-  "Chicago Bulls": CHI,
-  "Cleveland Cavaliers": CLE,
-  "Dallas Mavericks": DAL,
-  "Denver Nuggets": DEN,
-  "Detroit Pistons": DET,
-  "Golden State Warriors": GSW,
-  "Houston Rockets": HOU,
-  "Indiana Pacers": IND,
-  "LA Clippers": LAC,
-  "Los Angeles Lakers": LAL,
-  "Memphis Grizzlies": MEM,
-  "Miami Heat": MIA,
-  "Milwaukee Bucks": MIL,
-  "Minnesota Timberwolves": MIN,
-  "New Orleans Pelicans": NOP,
-  "New York Knicks": NYK,
-  "Oklahoma City Thunder": OKC,
-  "Orlando Magic": ORL,
-  "Philadelphia 76ers": PHI,
-  "Phoenix Suns": PHX,
-  "Portland Trail Blazers": POR,
-  "Sacramento Kings": SAC,
-  "San Antonio Spurs": SAS,
-  "Toronto Raptors": TOR,
-  "Utah Jazz": UTA,
-  "Washington Wizards": WAS,
+  "Atlanta Hawks": ATL, "Boston Celtics": BOS, "Brooklyn Nets": BKN, "Charlotte Hornets": CHA,
+  "Chicago Bulls": CHI, "Cleveland Cavaliers": CLE, "Dallas Mavericks": DAL, "Denver Nuggets": DEN,
+  "Detroit Pistons": DET, "Golden State Warriors": GSW, "Houston Rockets": HOU, "Indiana Pacers": IND,
+  "LA Clippers": LAC, "Los Angeles Lakers": LAL, "Memphis Grizzlies": MEM, "Miami Heat": MIA,
+  "Milwaukee Bucks": MIL, "Minnesota Timberwolves": MIN, "New Orleans Pelicans": NOP,
+  "New York Knicks": NYK, "Oklahoma City Thunder": OKC, "Orlando Magic": ORL, "Philadelphia 76ers": PHI,
+  "Phoenix Suns": PHX, "Portland Trail Blazers": POR, "Sacramento Kings": SAC,
+  "San Antonio Spurs": SAS, "Toronto Raptors": TOR, "Utah Jazz": UTA, "Washington Wizards": WAS,
 };
+
+const sportsbooks: string[] = ['fanduel', 'draftkings', 'BetRivers', 'bet365'];
 
 type OddsGame = {
   home_team: string;
@@ -50,8 +30,6 @@ type OddsGame = {
   totals: Record<string, string>;
 };
 
-const sportsbooks = ['fanduel', 'draftkings', 'bet_rivers_ny', 'bet365'];
-
 export default function OddsPage() {
   const [odds, setOdds] = useState<OddsGame[]>([]);
 
@@ -60,7 +38,33 @@ export default function OddsPage() {
       try {
         const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/get-odds`);
         const data = await res.json();
-        setOdds(data.games || []);
+
+        const cleanedGames = (data.games || []).map((game: OddsGame) => {
+          const cleanHome = { ...game.moneylines.home };
+          const cleanAway = { ...game.moneylines.away };
+          const cleanTotal = { ...game.totals };
+
+          if (cleanHome['bet_rivers_ny']) {
+            cleanHome['BetRivers'] = cleanHome['bet_rivers_ny'];
+            delete cleanHome['bet_rivers_ny'];
+          }
+          if (cleanAway['bet_rivers_ny']) {
+            cleanAway['BetRivers'] = cleanAway['bet_rivers_ny'];
+            delete cleanAway['bet_rivers_ny'];
+          }
+          if (cleanTotal['bet_rivers_ny']) {
+            cleanTotal['BetRivers'] = cleanTotal['bet_rivers_ny'];
+            delete cleanTotal['bet_rivers_ny'];
+          }
+
+          return {
+            ...game,
+            moneylines: { home: cleanHome, away: cleanAway },
+            totals: cleanTotal,
+          };
+        });
+
+        setOdds(cleanedGames);
       } catch (err) {
         console.error('Failed to fetch odds:', err);
       }
@@ -68,6 +72,12 @@ export default function OddsPage() {
 
     fetchOdds();
   }, []);
+
+  const formatOdd = (odd: string) => {
+    if (!odd || odd === '-') return '-';
+    const num = parseFloat(odd);
+    return num > 0 ? `+${num}` : `${num}`;
+  };
 
   return (
     <main className="min-h-screen bg-gray-900 text-white p-8">
@@ -77,12 +87,12 @@ export default function OddsPage() {
         <table className="min-w-full table-auto border-collapse bg-gray-800 text-sm">
           <thead className="bg-gray-700 text-gray-300 uppercase text-xs">
             <tr>
-              <th className="px-4 py-3">Matchup</th>
-              <th className="px-4 py-3">Location</th>
+              <th className="px-4 py-3 w-[260px]">Matchup</th>
               {sportsbooks.map((book) => (
-                <th key={book} className="px-4 py-3 text-center">
-                  {book}
-                </th>
+                <>
+                  <th key={`${book}-ml`} className="px-4 py-3 text-center">{book} ML</th>
+                  <th key={`${book}-ou`} className="px-4 py-3 text-center">{book} O/U</th>
+                </>
               ))}
             </tr>
           </thead>
@@ -92,29 +102,47 @@ export default function OddsPage() {
               const HomeLogo = teamComponents[game.home_team];
 
               return (
-                <tr key={index} className="border-b border-gray-700 hover:bg-gray-700/30">
+                <tr key={index} className="border-b border-gray-700">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2 mb-1">
                       {AwayLogo && <AwayLogo size={30} />}
                       <span>{game.away_team}</span>
                     </div>
+                    <div className="w-full h-px bg-gray-600 my-1" />
                     <div className="flex items-center gap-2">
                       {HomeLogo && <HomeLogo size={30} />}
                       <span>{game.home_team}</span>
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-gray-400">{game.home_team} Arena</td>
+
                   {sportsbooks.map((book) => {
-                    const homeOdd = game.moneylines.home?.[book] ?? '-';
-                    const awayOdd = game.moneylines.away?.[book] ?? '-';
+                    const awayML = formatOdd(game.moneylines.away?.[book] ?? '-');
+                    const homeML = formatOdd(game.moneylines.home?.[book] ?? '-');
                     const total = game.totals?.[book];
+                    const num = parseFloat(total);
 
                     return (
-                      <td key={book} className="px-4 py-3 text-center text-gray-200">
-                        <div>🏠 {homeOdd}</div>
-                        <div>🛫 {awayOdd}</div>
-                        {total && <div className="text-xs text-gray-400">O/U: {total}</div>}
-                      </td>
+                      <React.Fragment key={`${index}-${book}`}>
+                        <td className="px-1 py-3 text-center">
+                          <div className="bg-gray-700 rounded p-2">
+                            <div>{awayML}</div>
+                            <div className="w-full h-px bg-gray-600 my-1" />
+                            <div>{homeML}</div>
+                          </div>
+                        </td>
+                        <td className="px-1 py-3 text-center">
+                          <div className="bg-gray-700 rounded p-2">
+                            {isNaN(num) ? (
+                              <div className="text-gray-400">-</div>
+                            ) : (
+                              <>
+                                <div className="text-green-300">O {num}</div>
+                                <div className="text-red-300">U {num}</div>
+                              </>
+                            )}
+                          </div>
+                        </td>
+                      </React.Fragment>
                     );
                   })}
                 </tr>
