@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-
+console.log('🔥 BDL_API_KEY:', process.env.BDL_API_KEY);
 export async function GET() {
   const apiKey = process.env.BDL_API_KEY;
 
@@ -14,7 +14,7 @@ export async function GET() {
       `https://api.balldontlie.io/v1/games?start_date=${startDate}&end_date=${endDateStr}&per_page=100`,
       {
         headers: {
-          Authorization: `Bearer ${apiKey}`,
+            Authorization: apiKey ?? '',
         },
       }
     );
@@ -27,6 +27,7 @@ export async function GET() {
     return NextResponse.json(data);
   } catch (err) {
     console.error('API route error:', err);
+    console.log('Loaded BDL API Key:', process.env.BDL_API_KEY);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
