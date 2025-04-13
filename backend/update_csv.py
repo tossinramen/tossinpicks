@@ -8,7 +8,7 @@ def scrape_season(season: int) -> pd.DataFrame:
     base_url = f"https://www.basketball-reference.com/leagues/NBA_{season}_games.html"
     soup = BeautifulSoup(requests.get(base_url).text, "html.parser")
     month_urls = [a["href"] for a in soup.select("div.filter a[href]")]
-    
+
     all_games = []
     for month_url in month_urls:
         full_url = f"https://www.basketball-reference.com{month_url}"
@@ -41,6 +41,9 @@ def update_nba_csv():
         raise FileNotFoundError("nba_games.csv not found in the data/ directory.")
 
     existing = pd.read_csv(path)
+    if "Unnamed: 0" in existing.columns:
+        existing.drop(columns=["Unnamed: 0"], inplace=True)
+
     existing["date"] = pd.to_datetime(existing["date"], errors="coerce")
     latest_date = existing["date"].max()
 
@@ -56,7 +59,9 @@ def update_nba_csv():
 
     if new_games:
         new_df = pd.concat(new_games, ignore_index=True)
-        # Reorder to match existing column order
+        # Drop "Unnamed: 0" if it accidentally shows up again
+        if "Unnamed: 0" in new_df.columns:
+            new_df.drop(columns=["Unnamed: 0"], inplace=True)
         new_df = new_df[[col for col in existing.columns if col in new_df.columns]]
         updated_df = pd.concat([existing, new_df], ignore_index=True)
         updated_df.drop_duplicates(subset=["date", "home_team", "visitor_team"], keep="last", inplace=True)
