@@ -7,6 +7,7 @@ import {
   GSW, HOU, IND, LAC, LAL, MEM, MIA, MIL, MIN, NOP,
   NYK, OKC, ORL, PHI, PHX, POR, SAC, SAS, TOR, UTA, WAS
 } from 'react-nba-logos';
+import Header from '../../components/Header';
 
 interface Game {
   id: number;
@@ -86,6 +87,7 @@ export default function SchedulePage() {
 
   return (
     <main className="min-h-screen bg-gray-900 text-white p-8">
+      <Header />
       <h1 className="text-4xl font-bold mb-8 text-center">NBA Schedule</h1>
 
       {Object.keys(gamesByDate).length === 0 ? (
