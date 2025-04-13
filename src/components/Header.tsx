@@ -6,9 +6,10 @@ import { FiMenu } from 'react-icons/fi';
 
 interface HeaderProps {
   onMenuClick: () => void;
+  isSidebarOpen: boolean;
 }
 
-export default function Header({ onMenuClick }: HeaderProps) {
+export default function Header({ onMenuClick, isSidebarOpen }: HeaderProps) {
   const pathname = usePathname();
 
   const navItems = [
@@ -18,19 +19,27 @@ export default function Header({ onMenuClick }: HeaderProps) {
   ];
 
   return (
-    <header className="bg-black px-6 py-4 flex items-center justify-between border-b border-gray-800 shadow-sm relative z-50">
-      <div className="flex items-center gap-6">
-        <button onClick={onMenuClick} className="text-white text-2xl block">
+    <header className="bg-black px-6 py-4 border-b border-gray-800 shadow-sm relative z-50">
+      <div className="flex items-center gap-8 flex-wrap">
+        {/* Menu Button */}
+        <button
+          onClick={onMenuClick}
+          className={`text-2xl transition-colors duration-150 ${
+            isSidebarOpen ? 'text-red-400' : 'text-white hover:text-red-400'
+          }`}
+        >
           <FiMenu />
         </button>
+
+        {/* Logo + Text */}
         <img src="/logo-icon.png" alt="tossinpicks logo" className="h-10 w-auto" />
         <div>
           <h1 className="text-xl font-bold lowercase text-white">tossinpicks</h1>
           <p className="text-sm text-gray-400">Sports Predictions & Analysis</p>
         </div>
 
-        {/* Navigation - move left next to logo */}
-        <nav className="hidden md:flex gap-10 ml-10 text-sm font-semibold uppercase tracking-wide">
+        {/* Navigation links (stay on the left) */}
+        <nav className="flex gap-6 text-sm font-semibold uppercase tracking-wide ml-10 flex-wrap">
           {navItems.map(({ name, href }) => {
             const isActive = pathname === href;
             return (
