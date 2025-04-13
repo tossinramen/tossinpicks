@@ -2,34 +2,36 @@
 
 import { useEffect, useState } from 'react';
 
-type TeamInfo = { name: string };
 type Game = {
-  date: { start: string };
-  teams: { home: TeamInfo; visitors: TeamInfo };
+  id: number;
+  date: string;
+  home_team: { full_name: string };
+  visitor_team: { full_name: string };
 };
 
 export default function SchedulePage() {
-  const [games, setGames] = useState<Game[]>([]);
+  const [gamesByDate, setGamesByDate] = useState<Record<string, Game[]>>({});
 
   useEffect(() => {
     const fetchGames = async () => {
-      const today = new Date().toISOString().split('T')[0]; // e.g., "2025-04-13"
-      const url = `https://api-nba-v1.p.rapidapi.com/games?season=2023&league=standard&date=${today}`;
+      const today = new Date();
+      const startDate = today.toISOString().split('T')[0];
 
-      try {
-        const res = await fetch(url, {
-          method: 'GET',
-          headers: {
-            'x-rapidapi-host': 'api-nba-v1.p.rapidapi.com',
-            'x-rapidapi-key': process.env.NEXT_PUBLIC_RAPIDAPI_KEY!,
-          },
-        });
+      const res = await fetch(
+        `https://www.balldontlie.io/api/v1/games?start_date=${startDate}&per_page=100`
+      );
 
-        const data = await res.json();
-        setGames(data.response || []);
-      } catch (error) {
-        console.error('Failed to fetch NBA games:', error);
-      }
+      const data = await res.json();
+
+      const grouped: Record<string, Game[]> = {};
+
+      (data.data || []).forEach((game: Game) => {
+        const dateKey = new Date(game.date).toISOString().split('T')[0];
+        if (!grouped[dateKey]) grouped[dateKey] = [];
+        grouped[dateKey].push(game);
+      });
+
+      setGamesByDate(grouped);
     };
 
     fetchGames();
@@ -39,18 +41,20 @@ export default function SchedulePage() {
     <main className="min-h-screen bg-gray-900 text-white p-8">
       <h1 className="text-4xl font-bold mb-6 text-center">🏀 NBA Schedule</h1>
 
-      {games.length === 0 && (
+      {Object.keys(gamesByDate).length === 0 && (
         <p className="text-center text-gray-400">No games found or still loading...</p>
       )}
 
-      {games.map((game, idx) => (
-        <div key={idx} className="mb-4 p-4 rounded-lg bg-gray-800 shadow">
-          <h2 className="text-xl font-semibold mb-1">
-            {game.teams.visitors.name} @ {game.teams.home.name}
-          </h2>
-          <p className="text-sm text-gray-400">
-            {new Date(game.date.start).toLocaleString()}
-          </p>
+      {Object.entries(gamesByDate).map(([date, games]) => (
+        <div key={date} className="mb-6 p-4 rounded-xl bg-gray-800 shadow">
+          <h2 className="text-2xl font-semibold mb-2">{date}</h2>
+          <ul className="list-disc list-inside space-y-1">
+            {games.map((game) => (
+              <li key={game.id}>
+                {game.visitor_team.full_name} @ {game.home_team.full_name}
+              </li>
+            ))}
+          </ul>
         </div>
       ))}
     </main>
