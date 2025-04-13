@@ -7,7 +7,8 @@ import {
   GSW, HOU, IND, LAC, LAL, MEM, MIA, MIL, MIN, NOP,
   NYK, OKC, ORL, PHI, PHX, POR, SAC, SAS, TOR, UTA, WAS
 } from 'react-nba-logos';
-import Header from '../../components/Header';
+import Header from '@/components/Header';
+import Sidebar from '@/components/Sidebar'; // ✅ Make sure this path is correct
 
 interface Game {
   id: number;
@@ -31,13 +32,10 @@ const teamComponents: Record<string, React.ElementType> = {
 
 export default function SchedulePage() {
   const [gamesByDate, setGamesByDate] = useState<Record<string, Game[]>>({});
+  const [activeSport, setActiveSport] = useState('NBA');
 
   useEffect(() => {
     const fetchGames = async () => {
-      const today = new Date();
-      const endDate = new Date(today);
-      endDate.setDate(today.getDate() + 7);
-
       try {
         const res = await fetch('/api/schedule');
         if (!res.ok) throw new Error(`API error: ${res.status}`);
@@ -60,67 +58,68 @@ export default function SchedulePage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
-      <Header />
+    <div className="min-h-screen flex bg-gray-900 text-white">
+      <Sidebar activeSport={activeSport} setActiveSport={setActiveSport} />
+      <div className="flex-1 flex flex-col">
+        <Header />
+        <main className="p-8">
+          <h1 className="text-4xl font-bold mb-8 text-center">NBA Schedule</h1>
 
-      <main className="p-8">
-        <h1 className="text-4xl font-bold mb-8 text-center">NBA Schedule</h1>
+          {Object.keys(gamesByDate).length === 0 ? (
+            <p className="text-center text-gray-400">No games found or still loading...</p>
+          ) : (
+            Object.entries(gamesByDate).map(([date, games]) => (
+              <div key={date} className="mb-12">
+                <h2 className="text-2xl font-semibold mb-4 border-b border-gray-700 pb-1">{date}</h2>
+                <div className="overflow-x-auto rounded-lg shadow-md">
+                  <table className="min-w-full bg-gray-800 text-left text-sm">
+                    <thead className="bg-gray-700 text-gray-300 uppercase tracking-wide text-xs">
+                      <tr>
+                        <th className="px-6 py-3">Matchup</th>
+                        <th className="px-6 py-3">Location</th>
+                        <th className="px-6 py-3">Date</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {games.map((game) => {
+                        const utcDate = new Date(game.date);
+                        const estDate = new Date(
+                          utcDate.toLocaleString('en-US', { timeZone: 'America/New_York' })
+                        );
 
-        {Object.keys(gamesByDate).length === 0 ? (
-          <p className="text-center text-gray-400">No games found or still loading...</p>
-        ) : (
-          Object.entries(gamesByDate).map(([date, games]) => (
-            <div key={date} className="mb-12">
-              <h2 className="text-2xl font-semibold mb-4 border-b border-gray-700 pb-1">{date}</h2>
+                        const VisitorLogo = teamComponents[game.visitor_team.full_name];
+                        const HomeLogo = teamComponents[game.home_team.full_name];
 
-              <div className="overflow-x-auto rounded-lg shadow-md">
-                <table className="min-w-full bg-gray-800 text-left text-sm">
-                  <thead className="bg-gray-700 text-gray-300 uppercase tracking-wide text-xs">
-                    <tr>
-                      <th className="px-6 py-3">Matchup</th>
-                      <th className="px-6 py-3">Location</th>
-                      <th className="px-6 py-3">Date</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {games.map((game) => {
-                      const utcDate = new Date(game.date);
-                      const estDate = new Date(
-                        utcDate.toLocaleString('en-US', { timeZone: 'America/New_York' })
-                      );
-
-                      const VisitorLogo = teamComponents[game.visitor_team.full_name];
-                      const HomeLogo = teamComponents[game.home_team.full_name];
-
-                      return (
-                        <tr key={game.id} className="border-b border-gray-700 hover:bg-gray-700/30">
-                          <td className="px-6 py-4">
-                            <div className="flex items-center gap-2 mb-1">
-                              {VisitorLogo && <VisitorLogo size={30} />}
-                              {game.visitor_team.full_name}
-                            </div>
-                            <div className="flex items-center gap-2">
-                              {HomeLogo && <HomeLogo size={30} />}
-                              {game.home_team.full_name}
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 text-gray-400">{game.home_team.full_name} Arena</td>
-                          <td className="px-6 py-4 text-gray-400">
-                            {estDate.toLocaleString('en-US', {
-                              dateStyle: 'medium',
-                              timeStyle: 'short',
-                            })}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+                        return (
+                          <tr key={game.id} className="border-b border-gray-700 hover:bg-gray-700/30">
+                            <td className="px-6 py-4">
+                              <div className="flex items-center gap-2 mb-1">
+                                {VisitorLogo && <VisitorLogo size={30} />}
+                                {game.visitor_team.full_name}
+                              </div>
+                              <div className="flex items-center gap-2">
+                                {HomeLogo && <HomeLogo size={30} />}
+                                {game.home_team.full_name}
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 text-gray-400">{game.home_team.full_name} Arena</td>
+                            <td className="px-6 py-4 text-gray-400">
+                              {estDate.toLocaleString('en-US', {
+                                dateStyle: 'medium',
+                                timeStyle: 'short',
+                              })}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
               </div>
-            </div>
-          ))
-        )}
-      </main>
+            ))
+          )}
+        </main>
+      </div>
     </div>
   );
 }
