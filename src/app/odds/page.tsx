@@ -18,8 +18,6 @@ const teamComponents: Record<string, React.ElementType> = {
   "San Antonio Spurs": SAS, "Toronto Raptors": TOR, "Utah Jazz": UTA, "Washington Wizards": WAS,
 };
 
-const sportsbooks: string[] = ['fanduel', 'draftkings', 'BetRivers', 'bet365'];
-
 type OddsGame = {
   home_team: string;
   away_team: string;
@@ -29,6 +27,8 @@ type OddsGame = {
   };
   totals: Record<string, string>;
 };
+
+const sportsbooks: string[] = ['fanduel', 'draftkings', 'BetRivers', 'bet365'];
 
 export default function OddsPage() {
   const [odds, setOdds] = useState<OddsGame[]>([]);
@@ -87,12 +87,14 @@ export default function OddsPage() {
         <table className="min-w-full table-auto border-collapse bg-gray-800 text-sm">
           <thead className="bg-gray-700 text-gray-300 uppercase text-xs">
             <tr>
-              <th className="px-4 py-3 w-[260px]">Matchup</th>
+              <th className="px-4 py-3 w-[260px] align-bottom" rowSpan={2}>Matchup</th>
               {sportsbooks.map((book) => (
-                <>
-                  <th key={`${book}-ml`} className="px-4 py-3 text-center">{book} ML</th>
-                  <th key={`${book}-ou`} className="px-4 py-3 text-center">{book} O/U</th>
-                </>
+                <th key={`${book}-group`} colSpan={2} className="text-center py-2">{book}</th>
+              ))}
+            </tr>
+            <tr>
+              {sportsbooks.map((book) => (
+                [<th key={`${book}-ml`} className="text-center">ML</th>, <th key={`${book}-ou`} className="text-center">O/U</th>]
               ))}
             </tr>
           </thead>
@@ -123,20 +125,21 @@ export default function OddsPage() {
 
                     return (
                       <React.Fragment key={`${index}-${book}`}>
-                        <td className="px-1 py-3 text-center">
-                          <div className="bg-gray-700 rounded p-2">
+                        <td className="px-2 py-3 text-center">
+                          <div className="bg-gray-700 rounded p-2 min-w-[80px]">
                             <div>{awayML}</div>
-                            <div className="w-full h-px bg-gray-600 my-1" />
+                            <div className="w-full h-px bg-gray-500 my-1" />
                             <div>{homeML}</div>
                           </div>
                         </td>
-                        <td className="px-1 py-3 text-center">
-                          <div className="bg-gray-700 rounded p-2">
+                        <td className="px-2 py-3 text-center">
+                          <div className="bg-gray-700 rounded p-2 min-w-[80px]">
                             {isNaN(num) ? (
                               <div className="text-gray-400">-</div>
                             ) : (
                               <>
                                 <div className="text-green-300">O {num}</div>
+                                <div className="w-full h-px bg-gray-500 my-1" />
                                 <div className="text-red-300">U {num}</div>
                               </>
                             )}
