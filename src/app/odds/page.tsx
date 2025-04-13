@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 
-interface GameOdds {
+type OddsGame = {
   home_team: string;
   away_team: string;
   moneylines: {
@@ -10,23 +10,21 @@ interface GameOdds {
     away: Record<string, string>;
   };
   totals: Record<string, string>;
-}
+};
+
+const sportsbooks = ['fanduel', 'draftkings', 'bet_rivers_ny', 'bet365', 'caesars', 'pointsbet', 'wynn'];
 
 export default function OddsPage() {
-  const [odds, setOdds] = useState<GameOdds[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [odds, setOdds] = useState<OddsGame[]>([]);
 
   useEffect(() => {
     const fetchOdds = async () => {
       try {
         const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/get-odds`);
-        if (!res.ok) throw new Error('Failed to fetch odds');
         const data = await res.json();
-        setOdds(data.games);
+        setOdds(data.games || []);
       } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
+        console.error('Failed to fetch odds:', err);
       }
     };
 
@@ -34,36 +32,47 @@ export default function OddsPage() {
   }, []);
 
   return (
-    <main className="p-8 text-white bg-gray-900 min-h-screen">
-      <h1 className="text-3xl font-bold mb-6">Check Odds</h1>
-      {loading ? (
-        <p>Loading odds...</p>
-      ) : (
-        <div className="space-y-6">
-          {odds.map((game, idx) => (
-            <div key={idx} className="p-4 bg-gray-800 rounded shadow">
-              <h2 className="text-xl font-semibold mb-2">
-                {game.away_team} @ {game.home_team}
-              </h2>
-              <p><strong>Moneylines:</strong></p>
-              <ul className="pl-5 list-disc">
-                {Object.entries(game.moneylines.home).map(([bookie, value]) => (
-                  <li key={`home-${bookie}`}>{bookie}: {value} (Home)</li>
-                ))}
-                {Object.entries(game.moneylines.away).map(([bookie, value]) => (
-                  <li key={`away-${bookie}`}>{bookie}: {value} (Away)</li>
-                ))}
-              </ul>
-              <p className="mt-2"><strong>Over/Under:</strong></p>
-              <ul className="pl-5 list-disc">
-                {Object.entries(game.totals).map(([bookie, val]) => (
-                  <li key={`total-${bookie}`}>{bookie}: {val}</li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
-      )}
+    <main className="min-h-screen bg-gray-900 text-white p-8">
+      <h1 className="text-4xl font-bold mb-6 text-center">Check Odds</h1>
+
+      <div className="overflow-x-auto">
+        <table className="min-w-full table-auto border-collapse bg-gray-800 text-sm">
+          <thead className="bg-gray-700 text-gray-300 uppercase text-xs">
+            <tr>
+              <th className="px-4 py-3">Matchup</th>
+              <th className="px-4 py-3">Location</th>
+              {sportsbooks.map((book) => (
+                <th key={book} className="px-4 py-3 text-center">
+                  {book}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {odds.map((game, index) => (
+              <tr key={index} className="border-b border-gray-700 hover:bg-gray-700/30">
+                <td className="px-4 py-3">
+                  {game.away_team} @ {game.home_team}
+                </td>
+                <td className="px-4 py-3 text-gray-400">{game.home_team} Arena</td>
+                {sportsbooks.map((book) => {
+                  const homeOdd = game.moneylines.home?.[book] ?? '-';
+                  const awayOdd = game.moneylines.away?.[book] ?? '-';
+                  const total = game.totals?.[book];
+
+                  return (
+                    <td key={book} className="px-4 py-3 text-center text-gray-200">
+                      <div>🏠 {homeOdd}</div>
+                      <div>🛫 {awayOdd}</div>
+                      {total && <div className="text-xs text-gray-400">O/U: {total}</div>}
+                    </td>
+                  );
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </main>
   );
 }
