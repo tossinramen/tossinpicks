@@ -68,16 +68,16 @@ def update_nba_csv():
     if new_games:
         new_df = pd.concat(new_games, ignore_index=True)
 
-        # Show debug info to help diagnose mismatched columns
+        
         print(f"\n🧪 Existing columns: {list(existing.columns)}")
         print(f"🧪 New data columns: {list(new_df.columns)}\n")
 
-        # Align new_df to existing columns that are present in both
+        
         new_df = new_df[[col for col in existing.columns if col in new_df.columns]]
 
         updated_df = pd.concat([existing, new_df], ignore_index=True)
 
-        # Only drop duplicates if all subset columns exist
+        
         subset_cols = ["date", "home_team", "visitor_team"]
         valid_subset = [col for col in subset_cols if col in updated_df.columns]
         if valid_subset:
