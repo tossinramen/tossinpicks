@@ -15,7 +15,7 @@ export default function Header({ onMenuClick, isSidebarOpen }: HeaderProps) {
   const navItems = [
     { name: 'Odds', href: '/odds' },
     { name: 'Schedule', href: '/schedule' },
-    { name: 'Picks', href: '/picks' },
+    { name: 'Predictions', href: '/predictions' },
   ];
 
   return (
