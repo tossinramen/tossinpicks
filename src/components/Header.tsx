@@ -1,50 +1,31 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { Dispatch, SetStateAction } from 'react';
+import { FiMenu } from 'react-icons/fi';
 
-export default function Header() {
-  const pathname = usePathname();
+interface HeaderProps {
+  onMenuClick: () => void;
+}
 
-  const navItems = [
-    { name: 'ODDS', href: '/odds' },
-    { name: 'SCHEDULE', href: '/schedule' },
-    { name: 'PICKS', href: '/picks' },
-  ];
-
+export default function Header({ onMenuClick }: HeaderProps) {
   return (
-    <header className="bg-black px-6 py-5 flex items-center justify-between border-b border-gray-800 shadow-sm">
-      <div className="flex items-center space-x-10">
-        {/* Logo + Name */}
-        <Link href="/" className="flex items-center space-x-3">
-          <img src="/logo-icon.png" alt="tossinpicks logo" className="h-10 w-auto" />
-          <div>
-            <h1 className="text-xl font-bold lowercase text-white">tossinpicks</h1>
-            <p className="text-sm text-gray-400">Sports Predictions & Analysis</p>
-          </div>
-        </Link>
-
-        {/* Nav */}
-        <nav className="flex space-x-10 text-base font-semibold tracking-wider uppercase">
-          {navItems.map(({ name, href }) => {
-            const isActive = pathname.startsWith(href);
-            return (
-              <Link
-                key={name}
-                href={href}
-                className={`relative pb-1 transition-colors ${
-                  isActive ? 'text-red-400' : 'text-white hover:text-red-400'
-                }`}
-              >
-                {name}
-                {isActive && (
-                  <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-4/5 h-[3px] bg-red-400 rounded-full" />
-                )}
-              </Link>
-            );
-          })}
-        </nav>
+    <header className="bg-black px-6 py-4 flex items-center justify-between border-b border-gray-800 shadow-sm relative z-50">
+      <div className="flex items-center gap-4">
+        <button onClick={onMenuClick} className="text-white text-2xl block md:hidden">
+          <FiMenu />
+        </button>
+        <img src="/logo-icon.png" alt="tossinpicks logo" className="h-10 w-auto" />
+        <div>
+          <h1 className="text-xl font-bold lowercase text-white">tossinpicks</h1>
+          <p className="text-sm text-gray-400">Sports Predictions & Analysis</p>
+        </div>
       </div>
+      <nav className="hidden md:flex gap-10 text-white text-sm font-semibold uppercase tracking-wide">
+        <Link href="/odds" className="hover:text-red-400">Odds</Link>
+        <Link href="/schedule" className="hover:text-red-400">Schedule</Link>
+        <Link href="/picks" className="hover:text-red-400">Picks</Link>
+      </nav>
     </header>
   );
 }
