@@ -86,7 +86,7 @@ export default function SchedulePage() {
 
   return (
     <main className="min-h-screen bg-gray-900 text-white p-8">
-      <h1 className="text-4xl font-bold mb-8 text-center">🏀 NBA Schedule</h1>
+      <h1 className="text-4xl font-bold mb-8 text-center">NBA Schedule</h1>
 
       {Object.keys(gamesByDate).length === 0 ? (
         <p className="text-center text-gray-400">No games found or still loading...</p>
@@ -100,7 +100,6 @@ export default function SchedulePage() {
                 <thead className="bg-gray-700 text-gray-300 uppercase tracking-wide text-xs">
                   <tr>
                     <th className="px-6 py-3">Matchup</th>
-                    <th className="px-6 py-3">Time (EST)</th>
                     <th className="px-6 py-3">Location</th>
                   </tr>
                 </thead>
@@ -108,11 +107,8 @@ export default function SchedulePage() {
                   {games.map((game) => {
                     const utcDate = new Date(game.date);
                     const estDate = new Date(utcDate.toLocaleString('en-US', { timeZone: 'America/New_York' }));
-                    const timeEST = estDate.toLocaleTimeString([], {
-                      hour: 'numeric',
-                      minute: '2-digit',
-                      hour12: true,
-                    });
+                    
+                      
 
                     const VisitorLogo = teamComponents[game.visitor_team.full_name];
                     const HomeLogo = teamComponents[game.home_team.full_name];
@@ -127,7 +123,7 @@ export default function SchedulePage() {
                             {HomeLogo && <HomeLogo size={30} />} {game.home_team.full_name}
                           </div>
                         </td>
-                        <td className="px-6 py-4 text-gray-300">{timeEST}</td>
+                        
                         <td className="px-6 py-4 text-gray-400">{game.home_team.full_name} Arena</td>
                       </tr>
                     );
