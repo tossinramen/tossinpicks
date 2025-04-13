@@ -84,7 +84,9 @@ export default function NbaSchedule() {
                             {HomeLogo && <HomeLogo size={30} />} {game.home_team.full_name}
                           </div>
                         </td>
-                        <td className="px-6 py-4 text-gray-400">{game.home_team.full_name} Arena</td>
+                        <td className="px-6 py-4 text-gray-400">
+                          {game.home_team.full_name} Arena
+                        </td>
                       </tr>
                     );
                   })}

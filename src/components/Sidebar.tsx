@@ -17,8 +17,8 @@ const sports = [
 export default function Sidebar({ activeSport, setActiveSport, isOpen }: SidebarProps) {
   return (
     <aside
-      className={`fixed top-0 left-0 h-full bg-black border-r border-gray-800 z-40 transform transition-transform duration-300 ease-in-out
-      ${isOpen ? 'translate-x-0' : '-translate-x-full'} w-16 sm:w-20 md:w-24`}
+      className={`h-full bg-black border-r border-gray-800 overflow-hidden transition-all duration-300 ease-in-out
+      ${isOpen ? 'w-16 sm:w-20 md:w-24' : 'w-0'}`}
     >
       <div className="pt-28 flex flex-col items-center space-y-6">
         {sports.map(({ name, icon }) => (
