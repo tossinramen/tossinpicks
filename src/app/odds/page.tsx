@@ -35,9 +35,11 @@ const sportsbooks: string[] = ['fanduel', 'draftkings', 'BetRivers', 'bet365'];
 export default function OddsPage() {
   const [odds, setOdds] = useState<OddsGame[]>([]);
   const [activeSport, setActiveSport] = useState('NBA');
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true); // Sidebar toggle
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
-  const handleMenuClick = () => setIsSidebarOpen(prev => !prev);
+  const handleMenuClick = () => {
+    setIsSidebarOpen((prev) => !prev);
+  };
 
   useEffect(() => {
     const fetchOdds = async () => {
@@ -88,8 +90,11 @@ export default function OddsPage() {
   return (
     <div className="min-h-screen flex bg-gray-900 text-white">
       <Sidebar activeSport={activeSport} setActiveSport={setActiveSport} isOpen={isSidebarOpen} />
+
       <div className="flex-1 flex flex-col">
+        {/* ✅ Match SchedulePage structure exactly */}
         <Header onMenuClick={handleMenuClick} />
+
         <main className="p-8">
           <h1 className="text-4xl font-bold mb-6 text-center">Check Odds</h1>
 
