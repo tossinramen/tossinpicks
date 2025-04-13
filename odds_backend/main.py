@@ -32,3 +32,10 @@ def get_odds():
         }
         results.append(data)
     return {"games": results}
+
+
+@app.get("/odds")
+def get_odds():
+    sb = Scoreboard(sport="NBA")
+    games = sb.games
+    return games
