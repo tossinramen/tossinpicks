@@ -67,12 +67,10 @@ export default function NbaSchedule() {
                   <tr>
                     <th className="px-6 py-3">Matchup</th>
                     <th className="px-6 py-3">Location</th>
-                    <th className="px-6 py-3">Date</th>
                   </tr>
                 </thead>
                 <tbody>
                   {games.map((game) => {
-                    const estDate = new Date(new Date(game.date).toLocaleString('en-US', { timeZone: 'America/New_York' }));
                     const VisitorLogo = teamComponents[game.visitor_team.full_name];
                     const HomeLogo = teamComponents[game.home_team.full_name];
 
@@ -87,9 +85,6 @@ export default function NbaSchedule() {
                           </div>
                         </td>
                         <td className="px-6 py-4 text-gray-400">{game.home_team.full_name} Arena</td>
-                        <td className="px-6 py-4 text-gray-400">
-                          {estDate.toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })}
-                        </td>
                       </tr>
                     );
                   })}

@@ -12,8 +12,8 @@ export default function Header({ onMenuClick }: HeaderProps) {
   return (
     <header className="bg-black px-6 py-4 flex items-center justify-between border-b border-gray-800 shadow-sm relative z-50">
       <div className="flex items-center gap-4">
-        <button onClick={onMenuClick} className="text-white text-2xl block md:hidden">
-          <FiMenu />
+        <button onClick={onMenuClick} className="text-white text-2xl block">
+            <FiMenu />
         </button>
         <img src="/logo-icon.png" alt="tossinpicks logo" className="h-10 w-auto" />
         <div>
