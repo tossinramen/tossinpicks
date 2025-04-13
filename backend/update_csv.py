@@ -52,19 +52,37 @@ def update_nba_csv():
 
     new_games = []
     for season in range(start_year, end_year + 1):
+        print(f"🔍 Scraping season {season}...")
         season_df = scrape_season(season)
+
+        if "date" not in season_df.columns:
+            print(f"⚠️  No 'date' column found for season {season}, skipping.")
+            continue
+
         season_df["date"] = pd.to_datetime(season_df["date"], errors="coerce")
         season_df = season_df[season_df["date"] > latest_date]
-        new_games.append(season_df)
+
+        if not season_df.empty:
+            new_games.append(season_df)
 
     if new_games:
         new_df = pd.concat(new_games, ignore_index=True)
-        # Drop "Unnamed: 0" if it accidentally shows up again
-        if "Unnamed: 0" in new_df.columns:
-            new_df.drop(columns=["Unnamed: 0"], inplace=True)
+
+        # Show debug info to help diagnose mismatched columns
+        print(f"\n🧪 Existing columns: {list(existing.columns)}")
+        print(f"🧪 New data columns: {list(new_df.columns)}\n")
+
+        # Align new_df to existing columns that are present in both
         new_df = new_df[[col for col in existing.columns if col in new_df.columns]]
+
         updated_df = pd.concat([existing, new_df], ignore_index=True)
-        updated_df.drop_duplicates(subset=["date", "home_team", "visitor_team"], keep="last", inplace=True)
+
+        # Only drop duplicates if all subset columns exist
+        subset_cols = ["date", "home_team", "visitor_team"]
+        valid_subset = [col for col in subset_cols if col in updated_df.columns]
+        if valid_subset:
+            updated_df.drop_duplicates(subset=valid_subset, keep="last", inplace=True)
+
         updated_df.to_csv(path, index=False)
         print(f"✅ CSV updated. Added {len(new_df)} new games.")
     else:
