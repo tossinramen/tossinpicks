@@ -12,7 +12,7 @@ type OddsGame = {
   totals: Record<string, string>;
 };
 
-const sportsbooks = ['fanduel', 'draftkings', 'bet_rivers_ny', 'bet365', 'caesars', 'pointsbet', 'wynn'];
+const sportsbooks = ['fanduel', 'draftkings', 'bet_rivers_ny', 'bet365'];
 
 export default function OddsPage() {
   const [odds, setOdds] = useState<OddsGame[]>([]);
