@@ -49,24 +49,47 @@ export default function SchedulePage() {
 
   return (
     <main className="min-h-screen bg-gray-900 text-white p-8">
-      <h1 className="text-4xl font-bold mb-6 text-center">🏀 NBA Schedule</h1>
+  <h1 className="text-4xl font-bold mb-8 text-center">🏀 NBA Schedule</h1>
 
-      {Object.keys(gamesByDate).length === 0 ? (
-        <p className="text-center text-gray-400">No games found or still loading...</p>
-      ) : (
-        Object.entries(gamesByDate).map(([date, games]) => (
-          <div key={date} className="mb-6 p-4 rounded-xl bg-gray-800 shadow">
-            <h2 className="text-2xl font-semibold mb-2">{date}</h2>
-            <ul className="list-disc list-inside space-y-1">
-              {games.map((game) => (
-                <li key={game.id}>
-                  {game.visitor_team.full_name} @ {game.home_team.full_name} — {game.status}
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))
-      )}
-    </main>
+  {Object.keys(gamesByDate).length === 0 ? (
+    <p className="text-center text-gray-400">No games found or still loading...</p>
+  ) : (
+    Object.entries(gamesByDate).map(([date, games]) => (
+      <div key={date} className="mb-12">
+        <h2 className="text-2xl font-semibold mb-4 border-b border-gray-700 pb-1">{date}</h2>
+
+        <div className="overflow-x-auto rounded-lg shadow-md">
+          <table className="min-w-full bg-gray-800 text-left text-sm">
+            <thead className="bg-gray-700 text-gray-300 uppercase tracking-wide text-xs">
+              <tr>
+                <th className="px-6 py-3">Matchup</th>
+                <th className="px-6 py-3">Status / Time</th>
+              </tr>
+            </thead>
+            <tbody>
+              {games.map((game) => {
+                const localTime = new Date(game.date).toLocaleTimeString([], {
+                  hour: 'numeric',
+                  minute: '2-digit',
+                  hour12: true,
+                });
+
+                return (
+                  <tr key={game.id} className="border-b border-gray-700 hover:bg-gray-700/30">
+                    <td className="px-6 py-4">
+                      <span className="font-medium">{game.visitor_team.full_name}</span> @{' '}
+                      <span className="font-medium">{game.home_team.full_name}</span>
+                    </td>
+                    <td className="px-6 py-4 text-gray-400">{game.status || localTime}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    ))
+  )}
+</main>
   );
 }
