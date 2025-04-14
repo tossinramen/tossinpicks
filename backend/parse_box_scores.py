@@ -2,6 +2,7 @@ import os
 import pandas as pd
 from bs4 import BeautifulSoup
 from io import StringIO
+from tqdm import tqdm
 
 SCORES_DIR = "data/scores"
 OUT_PATH = "data/nba_games.csv"
@@ -35,7 +36,9 @@ def read_season_info(soup):
 games = []
 base_cols = None
 
-for idx, file in enumerate(box_scores):
+print(f"📂 Parsing {len(box_scores)} box scores...\n")
+
+for idx, file in enumerate(tqdm(box_scores, desc="Parsing box scores")):
     soup = parse_html(file)
     line_score = read_line_score(soup)
     if line_score is None:
@@ -75,9 +78,6 @@ for idx, file in enumerate(box_scores):
     full_game["won"] = full_game["total"] > full_game["total_opp"]
     games.append(full_game)
 
-    if idx % 100 == 0:
-        print(f"✅ Parsed {idx}/{len(box_scores)}")
-
 df = pd.concat(games, ignore_index=True)
 df.to_csv(OUT_PATH, index=False)
-print(f"✅ Saved {len(df)} rows to {OUT_PATH}")
+print(f"\n✅ Saved {len(df)} rows to {OUT_PATH}")
