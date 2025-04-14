@@ -1,6 +1,7 @@
 import os
 import time
 from bs4 import BeautifulSoup
+from tqdm.asyncio import tqdm
 from playwright.async_api import async_playwright, TimeoutError as PlaywrightTimeout
 
 SEASONS = list(range(2021, 2025))
@@ -29,6 +30,7 @@ async def get_html(url, selector, sleep=3, retries=3):
     return html
 
 async def scrape_season(season):
+    print(f"\n📅 Scraping schedule for season {season}")
     url = f"https://www.basketball-reference.com/leagues/NBA_{season}_games.html"
     html = await get_html(url, "#content .filter")
     soup = BeautifulSoup(html, "html.parser")
@@ -36,7 +38,7 @@ async def scrape_season(season):
     hrefs = [l["href"] for l in links]
     standings_pages = [f"https://www.basketball-reference.com{l}" for l in hrefs]
 
-    for url in standings_pages:
+    for url in tqdm(standings_pages, desc=f"Season {season} months"):
         save_path = os.path.join(STANDINGS_DIR, url.split("/")[-1])
         if os.path.exists(save_path):
             continue
@@ -46,23 +48,30 @@ async def scrape_season(season):
                 f.write(html)
 
 async def scrape_box_scores():
+    print("\n📦 Scraping box scores...")
     standings_files = [f for f in os.listdir(STANDINGS_DIR) if f.endswith(".html")]
-    for file in standings_files:
+
+    for file in tqdm(standings_files, desc="Standings files"):
         with open(os.path.join(STANDINGS_DIR, file), "r", encoding="utf-8") as f:
             soup = BeautifulSoup(f.read(), "html.parser")
             links = soup.find_all("a")
             hrefs = [l.get("href") for l in links]
-            box_scores = [f"https://www.basketball-reference.com{l}" for l in hrefs if l and "boxscore" in l]
 
-            for url in box_scores:
-                save_path = os.path.join(SCORES_DIR, url.split("/")[-1])
+            # Only valid boxscore links
+            box_scores = [
+                f"https://www.basketball-reference.com{l}"
+                for l in hrefs if l and "boxscore" in l and ".html" in l
+            ]
+
+            for url in tqdm(box_scores, desc=f"{file} games", leave=False):
+                save_name = url.split("/")[-1]
+                save_path = os.path.join(SCORES_DIR, save_name)
                 if os.path.exists(save_path):
                     continue
                 html = await get_html(url, "#content")
                 if html:
                     with open(save_path, "w+", encoding="utf-8") as f:
                         f.write(html)
-
 
 if __name__ == "__main__":
     import asyncio
