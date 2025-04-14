@@ -52,26 +52,34 @@ async def scrape_box_scores():
     standings_files = [f for f in os.listdir(STANDINGS_DIR) if f.endswith(".html")]
 
     for file in tqdm(standings_files, desc="Standings files"):
-        with open(os.path.join(STANDINGS_DIR, file), "r", encoding="utf-8") as f:
-            soup = BeautifulSoup(f.read(), "html.parser")
-            links = soup.find_all("a")
-            hrefs = [l.get("href") for l in links]
+        path = os.path.join(STANDINGS_DIR, file)
 
-            # Only valid boxscore links
-            box_scores = [
-                f"https://www.basketball-reference.com{l}"
-                for l in hrefs if l and "boxscore" in l and ".html" in l
-            ]
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                content = f.read()
+        except UnicodeDecodeError:
+            with open(path, "r", encoding="utf-8-sig", errors="replace") as f:
+                content = f.read()
 
-            for url in tqdm(box_scores, desc=f"{file} games", leave=False):
-                save_name = url.split("/")[-1]
-                save_path = os.path.join(SCORES_DIR, save_name)
-                if os.path.exists(save_path):
-                    continue
-                html = await get_html(url, "#content")
-                if html:
-                    with open(save_path, "w+", encoding="utf-8") as f:
-                        f.write(html)
+        soup = BeautifulSoup(content, "html.parser")
+        links = soup.find_all("a")
+        hrefs = [l.get("href") for l in links]
+
+        # Only valid boxscore links
+        box_scores = [
+            f"https://www.basketball-reference.com{l}"
+            for l in hrefs if l and "boxscore" in l and ".html" in l
+        ]
+
+        for url in tqdm(box_scores, desc=f"{file} games", leave=False):
+            save_name = url.split("/")[-1]
+            save_path = os.path.join(SCORES_DIR, save_name)
+            if os.path.exists(save_path):
+                continue
+            html = await get_html(url, "#content")
+            if html:
+                with open(save_path, "w+", encoding="utf-8") as f:
+                    f.write(html)
 
 if __name__ == "__main__":
     import asyncio
