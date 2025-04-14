@@ -1,4 +1,4 @@
-uvicorn odds_backend.main:app --reload to run back end server
+uvicorn odds_backend.main:app --reload            to run back end server
 
 http://127.0.0.1:8000/get-odds or http://127.0.0.1:8000/odds
 

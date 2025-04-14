@@ -1,22 +1,27 @@
+import os
 import pandas as pd
 import xgboost as xgb
 import joblib
-from backend.features import get_ml_features
+from features import get_ml_features
 
-# Load data
+
 df = pd.read_csv('data/nba_games.csv')
-df = df.dropna()
-
-# Features and labels
+df = df.dropna(subset=['won'])
+df['won'] = df['won'].astype(int)
+df = df[df['won'].isin([0, 1])]
 features = get_ml_features()
-X = df[features]
-y = df['won']  # Classification target: win/loss
+df = df.dropna(subset=features)
+print("✅ Unique target values:", df['won'].unique())
+print("✅ Target counts:\n", df['won'].value_counts())
 
-# Train model
-model = xgb.XGBClassifier(use_label_encoder=False, eval_metric='logloss')
+X = df[features]
+y = df['won']
+
+
+model = xgb.XGBClassifier(eval_metric='logloss')
 model.fit(X, y)
 
-# Save model
+os.makedirs('backend', exist_ok=True)
 model.save_model('backend/xgb_ml_model.json')
 joblib.dump(model, 'backend/model.joblib')
 

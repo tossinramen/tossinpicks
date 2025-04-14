@@ -1,17 +1,16 @@
 import pandas as pd
 import xgboost as xgb
-from backend.features import get_ou_features
+from features import get_ml_features
 
 
+# Load data
 df = pd.read_csv('data/nba_games.csv')
-
-
 df = df.dropna()
 
 
 features = get_ou_features()
 X = df[features]
-y = df['over_under_target']  
+y = df['total'] + df['total_opp']  
 
 
 model = xgb.XGBRegressor()
