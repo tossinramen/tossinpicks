@@ -1,11 +1,27 @@
-import sys
 import os
 import joblib
 import pandas as pd
 import sqlite3
+from .features import get_ml_features
 
-sys.path.append(os.path.dirname(__file__))
-from features import get_ml_features
+
+model = joblib.load("backend/xgb_model.pkl")
+features = get_ml_features()
+team_name_to_abbr = {
+    "Atlanta Hawks": "ATL", "Boston Celtics": "BOS", "Brooklyn Nets": "BKN", "Charlotte Hornets": "CHA",
+    "Chicago Bulls": "CHI", "Cleveland Cavaliers": "CLE", "Dallas Mavericks": "DAL", "Denver Nuggets": "DEN",
+    "Detroit Pistons": "DET", "Golden State Warriors": "GSW", "Houston Rockets": "HOU", "Indiana Pacers": "IND",
+    "LA Clippers": "LAC", "Los Angeles Lakers": "LAL", "Memphis Grizzlies": "MEM", "Miami Heat": "MIA",
+    "Milwaukee Bucks": "MIL", "Minnesota Timberwolves": "MIN", "New Orleans Pelicans": "NOP",
+    "New York Knicks": "NYK", "Oklahoma City Thunder": "OKC", "Orlando Magic": "ORL", "Philadelphia 76ers": "PHI",
+    "Phoenix Suns": "PHX", "Portland Trail Blazers": "POR", "Sacramento Kings": "SAC", "San Antonio Spurs": "SAS",
+    "Toronto Raptors": "TOR", "Utah Jazz": "UTA", "Washington Wizards": "WAS"
+}
+
+conn = sqlite3.connect("data/nba_games_full.db")
+df = pd.read_sql("SELECT * FROM nba_games_full", conn)
+conn.close()
+
 
 def predictMatchup(data: dict) -> str:
     home_team = data["home_team"]["full_name"] if isinstance(data["home_team"], dict) else data["home_team"]
@@ -13,27 +29,7 @@ def predictMatchup(data: dict) -> str:
     date = data["date"]
 
     print(f"\n📅 Predicting: {home_team} vs {visitor_team} on {date}")
-
-    team_name_to_abbr = {
-        "Atlanta Hawks": "ATL", "Boston Celtics": "BOS", "Brooklyn Nets": "BKN", "Charlotte Hornets": "CHA",
-        "Chicago Bulls": "CHI", "Cleveland Cavaliers": "CLE", "Dallas Mavericks": "DAL", "Denver Nuggets": "DEN",
-        "Detroit Pistons": "DET", "Golden State Warriors": "GSW", "Houston Rockets": "HOU", "Indiana Pacers": "IND",
-        "LA Clippers": "LAC", "Los Angeles Lakers": "LAL", "Memphis Grizzlies": "MEM", "Miami Heat": "MIA",
-        "Milwaukee Bucks": "MIL", "Minnesota Timberwolves": "MIN", "New Orleans Pelicans": "NOP",
-        "New York Knicks": "NYK", "Oklahoma City Thunder": "OKC", "Orlando Magic": "ORL", "Philadelphia 76ers": "PHI",
-        "Phoenix Suns": "PHX", "Portland Trail Blazers": "POR", "Sacramento Kings": "SAC", "San Antonio Spurs": "SAS",
-        "Toronto Raptors": "TOR", "Utah Jazz": "UTA", "Washington Wizards": "WAS"
-    }
-
-    model = joblib.load("backend/xgb_model.pkl")
-    features = get_ml_features()
-
-    conn = sqlite3.connect("data/nba_games_full.db")
-    df = pd.read_sql("SELECT * FROM nba_games_full", conn)
-    conn.close()
-
-    print(f"📊 Total rows in DB: {len(df)}")
-    print("🧪 team_x example values:", df['team_x'].unique()[:5])
+    
 
     home_abbr = team_name_to_abbr.get(home_team, home_team)
     away_abbr = team_name_to_abbr.get(visitor_team, visitor_team)

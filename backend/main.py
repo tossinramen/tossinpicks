@@ -2,7 +2,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from sbrscrape import Scoreboard
 from backend.predict_matchup import predictMatchup
-
+import asyncio #for making predictions in parallel
 
 app = FastAPI()
 
@@ -44,15 +44,23 @@ def get_odds():
 
 @app.post("/predict")
 async def predict(request: Request):
-    body = await request.json()
-    games = body.get("games", [])
+    try:
+        body = await request.json()
+        games = body.get("games", [])
 
-    predictions = []
-    for game in games:
-        winner = predictMatchup(game)
-        predictions.append({
-            **game,
-            "prediction": winner
-        })
+        async def predict_one(game):
+            try:
+                return { **game, "prediction": await asyncio.to_thread(predictMatchup, game) }
+            except asyncio.CancelledError:
+                print("⚠️ Prediction task was cancelled")
+                return { **game, "prediction": "Cancelled" }
+            except Exception as e:
+                print(f"❌ Error predicting game: {e}")
+                return { **game, "prediction": "Error" }
 
-    return {"predictions": predictions}
+        predictions = await asyncio.gather(*[predict_one(game) for game in games])
+        return { "predictions": predictions }
+
+    except Exception as e:
+        print("🔥 Exception in /predict:", e)
+        raise HTTPException(status_code=500, detail="Internal server error")
