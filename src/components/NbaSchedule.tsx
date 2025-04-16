@@ -1,11 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import {
-  ATL, BOS, BKN, CHA, CHI, CLE, DAL, DEN, DET,
-  GSW, HOU, IND, LAC, LAL, MEM, MIA, MIL, MIN, NOP,
-  NYK, OKC, ORL, PHI, PHX, POR, SAC, SAS, TOR, UTA, WAS
-} from 'react-nba-logos';
+import TeamLogo from '@/components/TeamLogo'; 
 
 interface Game {
   id: number;
@@ -15,17 +11,6 @@ interface Game {
   home_team: { full_name: string };
   visitor_team: { full_name: string };
 }
-
-const teamComponents: Record<string, React.ElementType> = {
-  "Atlanta Hawks": ATL, "Boston Celtics": BOS, "Brooklyn Nets": BKN, "Charlotte Hornets": CHA,
-  "Chicago Bulls": CHI, "Cleveland Cavaliers": CLE, "Dallas Mavericks": DAL, "Denver Nuggets": DEN,
-  "Detroit Pistons": DET, "Golden State Warriors": GSW, "Houston Rockets": HOU, "Indiana Pacers": IND,
-  "LA Clippers": LAC, "Los Angeles Lakers": LAL, "Memphis Grizzlies": MEM, "Miami Heat": MIA,
-  "Milwaukee Bucks": MIL, "Minnesota Timberwolves": MIN, "New Orleans Pelicans": NOP,
-  "New York Knicks": NYK, "Oklahoma City Thunder": OKC, "Orlando Magic": ORL, "Philadelphia 76ers": PHI,
-  "Phoenix Suns": PHX, "Portland Trail Blazers": POR, "Sacramento Kings": SAC,
-  "San Antonio Spurs": SAS, "Toronto Raptors": TOR, "Utah Jazz": UTA, "Washington Wizards": WAS
-};
 
 export default function NbaSchedule() {
   const [gamesByDate, setGamesByDate] = useState<Record<string, Game[]>>({});
@@ -70,26 +55,23 @@ export default function NbaSchedule() {
                   </tr>
                 </thead>
                 <tbody>
-                  {games.map((game) => {
-                    const VisitorLogo = teamComponents[game.visitor_team.full_name];
-                    const HomeLogo = teamComponents[game.home_team.full_name];
-
-                    return (
-                      <tr key={game.id} className="border-b border-gray-700 hover:bg-gray-700/30">
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-2 mb-1">
-                            {VisitorLogo && <VisitorLogo size={30} />} {game.visitor_team.full_name}
-                          </div>
-                          <div className="flex items-center gap-2">
-                            {HomeLogo && <HomeLogo size={30} />} {game.home_team.full_name}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 text-gray-400">
-                          {game.home_team.full_name} Arena
-                        </td>
-                      </tr>
-                    );
-                  })}
+                  {games.map((game) => (
+                    <tr key={game.id} className="border-b border-gray-700 hover:bg-gray-700/30">
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-2 mb-1">
+                          <TeamLogo teamName={game.visitor_team.full_name} />
+                          {game.visitor_team.full_name}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <TeamLogo teamName={game.home_team.full_name} />
+                          {game.home_team.full_name}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-gray-400">
+                        {game.home_team.full_name} Arena
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>
