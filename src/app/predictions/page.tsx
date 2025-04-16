@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Header from '@/components/Header';
 import Sidebar from '@/components/Sidebar';
+import TeamLogo from '@/components/TeamLogo'; // Make sure this exists!
 
 interface Game {
   id: number;
@@ -29,30 +30,28 @@ export default function PredictionsPage() {
         const res = await fetch('/api/schedule');
         const data = await res.json();
         const gamesList = data.data || [];
-  
-      
+
         const predRes = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/predict`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ games: gamesList }),
         });
-  
-        const predictionResults = await predRes.json(); 
-  
-        
+
+        const predictionResults = await predRes.json();
+
         const grouped: Record<string, Game[]> = {};
         for (const game of predictionResults.predictions) {
           const dateKey = new Date(game.date).toISOString().split('T')[0];
           if (!grouped[dateKey]) grouped[dateKey] = [];
           grouped[dateKey].push(game);
         }
-  
+
         setGamesByDate(grouped);
       } catch (err) {
         console.error('❌ Error loading predictions:', err);
       }
     };
-  
+
     fetchGamesAndPredictions();
   }, []);
 
@@ -79,20 +78,36 @@ export default function PredictionsPage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {games.map((game) => (
-                        <tr key={game.id} className="border-b border-gray-700 hover:bg-gray-700/30">
-                          <td className="px-6 py-4">
-                            <div>{game.visitor_team.full_name}</div>
-                            <div>{game.home_team.full_name}</div>
-                          </td>
-                          <td className="px-6 py-4 text-gray-400">
-                            {game.home_team.full_name} Arena
-                          </td>
-                          <td className="px-6 py-4 text-green-400 font-semibold">
-                            {game.prediction || 'Predicting...'}
-                          </td>
-                        </tr>
-                      ))}
+                      {games.map((game) => {
+                        const predicted = game.prediction;
+                        const isHomePredicted = predicted === game.home_team.full_name;
+                        const isVisitorPredicted = predicted === game.visitor_team.full_name;
+
+                        return (
+                          <tr key={game.id} className="border-b border-gray-700 hover:bg-gray-700/30">
+                            <td className="px-6 py-4">
+                              <div className={`flex items-center gap-2 mb-1 ${isVisitorPredicted ? 'text-green-400 font-bold' : ''}`}>
+                                <TeamLogo teamName={game.visitor_team.full_name} />
+                                {game.visitor_team.full_name}
+                              </div>
+                              <div className={`flex items-center gap-2 ${isHomePredicted ? 'text-green-400 font-bold' : ''}`}>
+                                <TeamLogo teamName={game.home_team.full_name} />
+                                {game.home_team.full_name}
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 text-gray-400">
+                              {game.home_team.full_name} Arena
+                            </td>
+                            <td className="px-6 py-4 font-semibold">
+                              {predicted ? (
+                                <span className="text-green-400">{predicted}</span>
+                              ) : (
+                                'Predicting...'
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>
