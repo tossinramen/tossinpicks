@@ -8,8 +8,8 @@ sys.path.append(os.path.dirname(__file__))
 from features import get_ml_features
 
 def predictMatchup(data: dict) -> str:
-    home_team = data["home_team"]
-    visitor_team = data["visitor_team"]
+    home_team = data["home_team"]["full_name"] if isinstance(data["home_team"], dict) else data["home_team"]
+    visitor_team = data["visitor_team"]["full_name"] if isinstance(data["visitor_team"], dict) else data["visitor_team"]
     date = data["date"]
 
     print(f"\n📅 Predicting: {home_team} vs {visitor_team} on {date}")
