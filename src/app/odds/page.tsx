@@ -1,23 +1,19 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import {
-  ATL, BOS, BKN, CHA, CHI, CLE, DAL, DEN, DET,
-  GSW, HOU, IND, LAC, LAL, MEM, MIA, MIL, MIN, NOP,
-  NYK, OKC, ORL, PHI, PHX, POR, SAC, SAS, TOR, UTA, WAS
-} from 'react-nba-logos';
 import Header from '@/components/Header';
 import Sidebar from '@/components/Sidebar';
+import TeamLogo from '@/components/TeamLogo';
 
-const teamComponents: Record<string, React.ElementType> = {
-  "Atlanta Hawks": ATL, "Boston Celtics": BOS, "Brooklyn Nets": BKN, "Charlotte Hornets": CHA,
-  "Chicago Bulls": CHI, "Cleveland Cavaliers": CLE, "Dallas Mavericks": DAL, "Denver Nuggets": DEN,
-  "Detroit Pistons": DET, "Golden State Warriors": GSW, "Houston Rockets": HOU, "Indiana Pacers": IND,
-  "LA Clippers": LAC, "Los Angeles Lakers": LAL, "Memphis Grizzlies": MEM, "Miami Heat": MIA,
-  "Milwaukee Bucks": MIL, "Minnesota Timberwolves": MIN, "New Orleans Pelicans": NOP,
-  "New York Knicks": NYK, "Oklahoma City Thunder": OKC, "Orlando Magic": ORL, "Philadelphia 76ers": PHI,
-  "Phoenix Suns": PHX, "Portland Trail Blazers": POR, "Sacramento Kings": SAC,
-  "San Antonio Spurs": SAS, "Toronto Raptors": TOR, "Utah Jazz": UTA, "Washington Wizards": WAS,
+const teamNameToAbbr: Record<string, string> = {
+  'Atlanta Hawks': 'ATL', 'Boston Celtics': 'BOS', 'Brooklyn Nets': 'BKN', 'Charlotte Hornets': 'CHA',
+  'Chicago Bulls': 'CHI', 'Cleveland Cavaliers': 'CLE', 'Dallas Mavericks': 'DAL', 'Denver Nuggets': 'DEN',
+  'Detroit Pistons': 'DET', 'Golden State Warriors': 'GSW', 'Houston Rockets': 'HOU', 'Indiana Pacers': 'IND',
+  'LA Clippers': 'LAC', 'Los Angeles Lakers': 'LAL', 'Memphis Grizzlies': 'MEM', 'Miami Heat': 'MIA',
+  'Milwaukee Bucks': 'MIL', 'Minnesota Timberwolves': 'MIN', 'New Orleans Pelicans': 'NOP',
+  'New York Knicks': 'NYK', 'Oklahoma City Thunder': 'OKC', 'Orlando Magic': 'ORL', 'Philadelphia 76ers': 'PHI',
+  'Phoenix Suns': 'PHX', 'Portland Trail Blazers': 'POR', 'Sacramento Kings': 'SAC', 'San Antonio Spurs': 'SAS',
+  'Toronto Raptors': 'TOR', 'Utah Jazz': 'UTA', 'Washington Wizards': 'WAS'
 };
 
 type OddsGame = {
@@ -92,7 +88,6 @@ export default function OddsPage() {
       <Sidebar activeSport={activeSport} setActiveSport={setActiveSport} isOpen={isSidebarOpen} />
 
       <div className="flex-1 flex flex-col">
-        {/* ✅ Match SchedulePage structure exactly */}
         <Header onMenuClick={handleMenuClick} />
 
         <main className="p-8">
@@ -115,58 +110,53 @@ export default function OddsPage() {
                 </tr>
               </thead>
               <tbody>
-                {odds.map((game, index) => {
-                  const AwayLogo = teamComponents[game.away_team];
-                  const HomeLogo = teamComponents[game.home_team];
+                {odds.map((game, index) => (
+                  <tr key={index} className="border-b border-gray-700">
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2 mb-1">
+                        <TeamLogo teamName={game.away_team} size={30} />
+                        <span>{game.away_team}</span>
+                      </div>
+                      <div className="w-full h-px bg-gray-600 my-1" />
+                      <div className="flex items-center gap-2">
+                        <TeamLogo teamName={game.home_team} size={30} />
+                        <span>{game.home_team}</span>
+                      </div>
+                    </td>
 
-                  return (
-                    <tr key={index} className="border-b border-gray-700">
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-2 mb-1">
-                          {AwayLogo && <AwayLogo size={30} />}
-                          <span>{game.away_team}</span>
-                        </div>
-                        <div className="w-full h-px bg-gray-600 my-1" />
-                        <div className="flex items-center gap-2">
-                          {HomeLogo && <HomeLogo size={30} />}
-                          <span>{game.home_team}</span>
-                        </div>
-                      </td>
+                    {sportsbooks.map((book) => {
+                      const awayML = formatOdd(game.moneylines.away?.[book] ?? '-');
+                      const homeML = formatOdd(game.moneylines.home?.[book] ?? '-');
+                      const total = game.totals?.[book];
+                      const num = parseFloat(total);
 
-                      {sportsbooks.map((book) => {
-                        const awayML = formatOdd(game.moneylines.away?.[book] ?? '-');
-                        const homeML = formatOdd(game.moneylines.home?.[book] ?? '-');
-                        const total = game.totals?.[book];
-                        const num = parseFloat(total);
-
-                        return (
-                          <React.Fragment key={`${index}-${book}`}>
-                            <td className="px-2 py-3 text-center">
-                              <div className="bg-gray-700 rounded p-2 min-w-[80px]">
-                                <div>{awayML}</div>
-                                <div className="w-full h-px bg-gray-500 my-1" />
-                                <div>{homeML}</div>
-                              </div>
-                            </td>
-                            <td className="px-2 py-3 text-center">
-                              <div className="bg-gray-700 rounded p-2 min-w-[80px]">
-                                {isNaN(num) ? (
-                                  <div className="text-gray-400">-</div>
-                                ) : (
-                                  <>
-                                    <div className="text-green-300">O {num}</div>
-                                    <div className="w-full h-px bg-gray-500 my-1" />
-                                    <div className="text-red-300">U {num}</div>
-                                  </>
-                                )}
-                              </div>
-                            </td>
-                          </React.Fragment>
-                        );
-                      })}
-                    </tr>
-                  );
-                })}
+                      return (
+                        <React.Fragment key={`${index}-${book}`}>
+                          <td className="px-2 py-3 text-center">
+                            <div className="bg-gray-700 rounded p-2 min-w-[80px]">
+                              <div>{awayML}</div>
+                              <div className="w-full h-px bg-gray-500 my-1" />
+                              <div>{homeML}</div>
+                            </div>
+                          </td>
+                          <td className="px-2 py-3 text-center">
+                            <div className="bg-gray-700 rounded p-2 min-w-[80px]">
+                              {isNaN(num) ? (
+                                <div className="text-gray-400">-</div>
+                              ) : (
+                                <>
+                                  <div className="text-green-300">O {num}</div>
+                                  <div className="w-full h-px bg-gray-500 my-1" />
+                                  <div className="text-red-300">U {num}</div>
+                                </>
+                              )}
+                            </div>
+                          </td>
+                        </React.Fragment>
+                      );
+                    })}
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
