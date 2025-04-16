@@ -14,6 +14,8 @@ if 'mp.1' in df.columns:
     print("Dropped duplicate column 'mp.1'")
 else:
     print("No 'mp.1' column found.")
-
+if "Unnamed: 0" in df.columns:
+    df = df.drop(columns=["Unnamed: 0"])
+    print("✅ Removed 'Unnamed: 0' column")
 df.to_csv(csv_path, index=False)
 print("✅ Saved cleaned CSV to:", csv_path)
