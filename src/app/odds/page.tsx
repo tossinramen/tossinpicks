@@ -1,20 +1,8 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import Header from '@/components/Header';
-import Sidebar from '@/components/Sidebar';
+import SidebarWithHeader from '@/components/Header';
 import TeamLogo from '@/components/TeamLogo';
-
-const teamNameToAbbr: Record<string, string> = {
-  'Atlanta Hawks': 'ATL', 'Boston Celtics': 'BOS', 'Brooklyn Nets': 'BKN', 'Charlotte Hornets': 'CHA',
-  'Chicago Bulls': 'CHI', 'Cleveland Cavaliers': 'CLE', 'Dallas Mavericks': 'DAL', 'Denver Nuggets': 'DEN',
-  'Detroit Pistons': 'DET', 'Golden State Warriors': 'GSW', 'Houston Rockets': 'HOU', 'Indiana Pacers': 'IND',
-  'LA Clippers': 'LAC', 'Los Angeles Lakers': 'LAL', 'Memphis Grizzlies': 'MEM', 'Miami Heat': 'MIA',
-  'Milwaukee Bucks': 'MIL', 'Minnesota Timberwolves': 'MIN', 'New Orleans Pelicans': 'NOP',
-  'New York Knicks': 'NYK', 'Oklahoma City Thunder': 'OKC', 'Orlando Magic': 'ORL', 'Philadelphia 76ers': 'PHI',
-  'Phoenix Suns': 'PHX', 'Portland Trail Blazers': 'POR', 'Sacramento Kings': 'SAC', 'San Antonio Spurs': 'SAS',
-  'Toronto Raptors': 'TOR', 'Utah Jazz': 'UTA', 'Washington Wizards': 'WAS'
-};
 
 type OddsGame = {
   home_team: string;
@@ -26,7 +14,7 @@ type OddsGame = {
   totals: Record<string, string>;
 };
 
-const sportsbooks: string[] = ['fanduel', 'draftkings', 'BetRivers', 'bet365'];
+const sportsbooks = ['fanduel', 'draftkings', 'BetRivers', 'bet365'];
 
 export default function OddsPage() {
   const [odds, setOdds] = useState<OddsGame[]>([]);
@@ -34,7 +22,7 @@ export default function OddsPage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   const handleMenuClick = () => {
-    setIsSidebarOpen((prev) => !prev);
+    setIsSidebarOpen(prev => !prev);
   };
 
   useEffect(() => {
@@ -84,84 +72,79 @@ export default function OddsPage() {
   };
 
   return (
-    <div className="min-h-screen flex bg-gray-900 text-white">
-      <Sidebar activeSport={activeSport} setActiveSport={setActiveSport} isOpen={isSidebarOpen} />
+    <SidebarWithHeader
+      activeSport={activeSport}
+      setActiveSport={setActiveSport}
+      isOpen={isSidebarOpen}
+      onMenuClick={handleMenuClick}
+    >
+      <h1 className="text-4xl font-bold mb-6 text-center">Check Odds</h1>
+      <div className="overflow-x-auto">
+        <table className="min-w-full table-auto border-collapse bg-gray-800 text-sm">
+          <thead className="bg-gray-700 text-gray-300 uppercase text-xs">
+            <tr>
+              <th className="px-4 py-3 w-[260px] align-bottom" rowSpan={2}>Matchup</th>
+              {sportsbooks.map((book) => (
+                <th key={`${book}-group`} colSpan={2} className="text-center py-2">{book}</th>
+              ))}
+            </tr>
+            <tr>
+              {sportsbooks.flatMap((book) => [
+                <th key={`${book}-ml`} className="text-center">ML</th>,
+                <th key={`${book}-ou`} className="text-center">O/U</th>,
+              ])}
+            </tr>
+          </thead>
+          <tbody>
+            {odds.map((game, index) => (
+              <tr key={index} className="border-b border-gray-700">
+                <td className="px-6 py-4">
+                  <div className="flex items-center gap-2 mb-1">
+                    <TeamLogo teamName={game.away_team} size={30} />
+                    <span>{game.away_team}</span>
+                  </div>
+                  <div className="w-full h-px bg-gray-600 my-1" />
+                  <div className="flex items-center gap-2">
+                    <TeamLogo teamName={game.home_team} size={30} />
+                    <span>{game.home_team}</span>
+                  </div>
+                </td>
 
-      <div className="flex-1 flex flex-col">
-        <Header onMenuClick={handleMenuClick} />
+                {sportsbooks.map((book) => {
+                  const awayML = formatOdd(game.moneylines.away?.[book] ?? '-');
+                  const homeML = formatOdd(game.moneylines.home?.[book] ?? '-');
+                  const total = parseFloat(game.totals?.[book]);
 
-        <main className="p-8">
-          <h1 className="text-4xl font-bold mb-6 text-center">Check Odds</h1>
-
-          <div className="overflow-x-auto">
-            <table className="min-w-full table-auto border-collapse bg-gray-800 text-sm">
-              <thead className="bg-gray-700 text-gray-300 uppercase text-xs">
-                <tr>
-                  <th className="px-4 py-3 w-[260px] align-bottom" rowSpan={2}>Matchup</th>
-                  {sportsbooks.map((book) => (
-                    <th key={`${book}-group`} colSpan={2} className="text-center py-2">{book}</th>
-                  ))}
-                </tr>
-                <tr>
-                  {sportsbooks.flatMap((book) => [
-                    <th key={`${book}-ml`} className="text-center">ML</th>,
-                    <th key={`${book}-ou`} className="text-center">O/U</th>,
-                  ])}
-                </tr>
-              </thead>
-              <tbody>
-                {odds.map((game, index) => (
-                  <tr key={index} className="border-b border-gray-700">
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2 mb-1">
-                        <TeamLogo teamName={game.away_team} size={30} />
-                        <span>{game.away_team}</span>
-                      </div>
-                      <div className="w-full h-px bg-gray-600 my-1" />
-                      <div className="flex items-center gap-2">
-                        <TeamLogo teamName={game.home_team} size={30} />
-                        <span>{game.home_team}</span>
-                      </div>
-                    </td>
-
-                    {sportsbooks.map((book) => {
-                      const awayML = formatOdd(game.moneylines.away?.[book] ?? '-');
-                      const homeML = formatOdd(game.moneylines.home?.[book] ?? '-');
-                      const total = game.totals?.[book];
-                      const num = parseFloat(total);
-
-                      return (
-                        <React.Fragment key={`${index}-${book}`}>
-                          <td className="px-2 py-3 text-center">
-                            <div className="bg-gray-700 rounded p-2 min-w-[80px]">
-                              <div>{awayML}</div>
+                  return (
+                    <React.Fragment key={`${index}-${book}`}>
+                      <td className="px-2 py-3 text-center">
+                        <div className="bg-gray-700 rounded p-2 min-w-[80px]">
+                          <div>{awayML}</div>
+                          <div className="w-full h-px bg-gray-500 my-1" />
+                          <div>{homeML}</div>
+                        </div>
+                      </td>
+                      <td className="px-2 py-3 text-center">
+                        <div className="bg-gray-700 rounded p-2 min-w-[80px]">
+                          {isNaN(total) ? (
+                            <div className="text-gray-400">-</div>
+                          ) : (
+                            <>
+                              <div className="text-green-300">O {total}</div>
                               <div className="w-full h-px bg-gray-500 my-1" />
-                              <div>{homeML}</div>
-                            </div>
-                          </td>
-                          <td className="px-2 py-3 text-center">
-                            <div className="bg-gray-700 rounded p-2 min-w-[80px]">
-                              {isNaN(num) ? (
-                                <div className="text-gray-400">-</div>
-                              ) : (
-                                <>
-                                  <div className="text-green-300">O {num}</div>
-                                  <div className="w-full h-px bg-gray-500 my-1" />
-                                  <div className="text-red-300">U {num}</div>
-                                </>
-                              )}
-                            </div>
-                          </td>
-                        </React.Fragment>
-                      );
-                    })}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </main>
+                              <div className="text-red-300">U {total}</div>
+                            </>
+                          )}
+                        </div>
+                      </td>
+                    </React.Fragment>
+                  );
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
-    </div>
+    </SidebarWithHeader>
   );
 }

@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Header from '@/components/Header';
-import Sidebar from '@/components/Sidebar';
-import TeamLogo from '@/components/TeamLogo'; // Make sure this exists!
+import TeamLogo from '@/components/TeamLogo';
 
 interface Game {
   id: number;
@@ -18,11 +17,6 @@ interface Game {
 export default function PredictionsPage() {
   const [gamesByDate, setGamesByDate] = useState<Record<string, Game[]>>({});
   const [activeSport, setActiveSport] = useState('NBA');
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-
-  const handleMenuClick = () => {
-    setIsSidebarOpen((prev) => !prev);
-  };
 
   useEffect(() => {
     const fetchGamesAndPredictions = async () => {
@@ -56,66 +50,55 @@ export default function PredictionsPage() {
   }, []);
 
   return (
-    <div className="min-h-screen flex bg-gray-900 text-white">
-      <Sidebar activeSport={activeSport} setActiveSport={setActiveSport} isOpen={isSidebarOpen} />
-      <div className="flex-1 flex flex-col">
-        <Header onMenuClick={handleMenuClick} />
-        <main className="p-8">
-          <h1 className="text-4xl font-bold mb-8 text-center">Predicted NBA Winners</h1>
-          {Object.keys(gamesByDate).length === 0 ? (
-            <p className="text-center text-gray-400">Loading games and predictions...</p>
-          ) : (
-            Object.entries(gamesByDate).map(([date, games]) => (
-              <div key={date} className="mb-12">
-                <h2 className="text-2xl font-semibold mb-4 border-b border-gray-700 pb-1">{date}</h2>
-                <div className="overflow-x-auto rounded-lg shadow-md">
-                  <table className="min-w-full bg-gray-800 text-left text-sm">
-                    <thead className="bg-gray-700 text-gray-300 uppercase tracking-wide text-xs">
-                      <tr>
-                        <th className="px-6 py-3">Matchup</th>
-                        <th className="px-6 py-3">Location</th>
-                        <th className="px-6 py-3">Prediction</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {games.map((game) => {
-                        const predicted = game.prediction;
-                        const isHomePredicted = predicted === game.home_team.full_name;
-                        const isVisitorPredicted = predicted === game.visitor_team.full_name;
+    <Header activeSport={activeSport} setActiveSport={setActiveSport}>
+      <h1 className="text-4xl font-bold mb-8 text-center">Predicted NBA Winners</h1>
+      {Object.keys(gamesByDate).length === 0 ? (
+        <p className="text-center text-gray-400">Loading games and predictions...</p>
+      ) : (
+        Object.entries(gamesByDate).map(([date, games]) => (
+          <div key={date} className="mb-12">
+            <h2 className="text-2xl font-semibold mb-4 border-b border-gray-700 pb-1">{date}</h2>
+            <div className="overflow-x-auto rounded-lg shadow-md">
+              <table className="min-w-full bg-gray-800 text-left text-sm">
+                <thead className="bg-gray-700 text-gray-300 uppercase tracking-wide text-xs">
+                  <tr>
+                    <th className="px-6 py-3">Matchup</th>
+                    <th className="px-6 py-3">Location</th>
+                    <th className="px-6 py-3">Prediction</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {games.map((game) => {
+                    const isHome = game.prediction === game.home_team.full_name;
+                    const isAway = game.prediction === game.visitor_team.full_name;
 
-                        return (
-                          <tr key={game.id} className="border-b border-gray-700 hover:bg-gray-700/30">
-                            <td className="px-6 py-4">
-                              <div className={`flex items-center gap-2 mb-1 ${isVisitorPredicted ? 'text-green-400 font-bold' : ''}`}>
-                                <TeamLogo teamName={game.visitor_team.full_name} />
-                                {game.visitor_team.full_name}
-                              </div>
-                              <div className={`flex items-center gap-2 ${isHomePredicted ? 'text-green-400 font-bold' : ''}`}>
-                                <TeamLogo teamName={game.home_team.full_name} />
-                                {game.home_team.full_name}
-                              </div>
-                            </td>
-                            <td className="px-6 py-4 text-gray-400">
-                              {game.home_team.full_name} Arena
-                            </td>
-                            <td className="px-6 py-4 font-semibold">
-                              {predicted ? (
-                                <span className="text-green-400">{predicted}</span>
-                              ) : (
-                                'Predicting...'
-                              )}
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            ))
-          )}
-        </main>
-      </div>
-    </div>
+                    return (
+                      <tr key={game.id} className="border-b border-gray-700 hover:bg-gray-700/30">
+                        <td className="px-6 py-4">
+                          <div className={`flex items-center gap-2 mb-1 ${isAway ? 'text-green-400 font-bold' : ''}`}>
+                            <TeamLogo teamName={game.visitor_team.full_name} />
+                            {game.visitor_team.full_name}
+                          </div>
+                          <div className={`flex items-center gap-2 ${isHome ? 'text-green-400 font-bold' : ''}`}>
+                            <TeamLogo teamName={game.home_team.full_name} />
+                            {game.home_team.full_name}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-gray-400">
+                          {game.home_team.full_name} Arena
+                        </td>
+                        <td className="px-6 py-4 font-semibold text-green-400">
+                          {game.prediction ?? 'Predicting...'}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        ))
+      )}
+    </Header>
   );
 }
