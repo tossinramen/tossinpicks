@@ -6,7 +6,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, classification_report
 import matplotlib.pyplot as plt
 from features import get_ml_features
-
+from sklearn.metrics import brier_score_loss
 # === Load data ===
 db_path = os.path.join("data", "nba_games_full.db")
 conn = sqlite3.connect(db_path)
@@ -49,3 +49,9 @@ xgb.plot_importance(model)
 plt.title("All Feature Importances")
 plt.tight_layout()
 plt.show()
+
+
+
+y_prob = model.predict_proba(X_test)[:, 1]
+brier = brier_score_loss(y_test, y_prob)
+print(f"🎯 Brier Score: {brier:.4f}")

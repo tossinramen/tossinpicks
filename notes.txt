@@ -5,3 +5,9 @@ http://127.0.0.1:8000/get-odds or http://127.0.0.1:8000/odds
  0.7779 accuracy so far - thats pretty fucking good 
 
  0.7785 accuracy so far 
+ 0.1504 brier score
+
+
+ Add/remove features from features.py
+ run python /train_xgb_ml.py to run ML model 
+ run python /eval_xgb_ml.py for accuracy score
