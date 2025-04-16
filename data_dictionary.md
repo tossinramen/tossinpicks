@@ -4,7 +4,7 @@ This dictionary explains the engineered features used in the final model trainin
 
 ---
 
-## 🧠 Feature Descriptions
+## Feature Descriptions
 
 | Feature Name          | Description |
 |-----------------------|-------------|
@@ -41,8 +41,99 @@ This dictionary explains the engineered features used in the final model trainin
 | rest_days            | Days since the team’s last game |
 | home                 | 1 if game is at home, 0 if away |
 
----# 📊 NBA Game Prediction - Data Dictionary
+---
 
-This dictionary explains the engineered features used in the final model training (`train_xgb_ml.py`).
+---
+
+## 🧠 Feature Descriptions
+
+| Feature Prefix | Description |
+|----------------|-------------|
+| **No suffix**  | Base game-level stat (team) |
+| `_max`         | Max stat value for any player on the team in a single game |
+| `_opp`         | Same stat but for opponent team |
+| `_max_opp`     | Max stat by any opponent player in that game |
+| `_10_x`        | Team's 10-game rolling average (before merge) |
+| `_10_y`        | Opponent's 10-game rolling average (after merge) |
+| `_max_10_x`    | Team's 10-game rolling max (stat) |
+| `_max_10_y`    | Opponent's 10-game rolling max (stat) |
+| `_opp_10_x`    | Opponent 10-game rolling stat vs team |
+| `_opp_10_y`    | Team’s rolling stat against the opponent |
+| `target`       | Whether the team won the next game (1) or not (0) |
+| `rest_days`    | Days since last game |
+| `home`         | 1 if game was at home, 0 if away |
+
+---
+
+### 🏀 Core Stats
+
+| Feature | Description |
+|--------|-------------|
+| mp | Minutes played |
+| fg | Field goals made |
+| fga | Field goal attempts |
+| fg% | Field goal percentage |
+| 3p | Three-point field goals made |
+| 3pa | Three-point field goal attempts |
+| 3p% | Three-point percentage |
+| ft | Free throws made |
+| fta | Free throw attempts |
+| ft% | Free throw percentage |
+| orb | Offensive rebounds |
+| drb | Defensive rebounds |
+| trb | Total rebounds |
+| ast | Assists |
+| stl | Steals |
+| blk | Blocks |
+| tov | Turnovers |
+| pf | Personal fouls |
+| pts | Total points |
+
+---
+
+### 📈 Advanced Stats
+
+| Feature | Description |
+|--------|-------------|
+| ts% | True shooting % (efficiency adjusted for 3s & FTs) |
+| efg% | Effective field goal % |
+| 3par | % of FGA that were 3-point attempts |
+| ftr | Free throw rate (FTA per FGA) |
+| orb% | Offensive rebound rate |
+| drb% | Defensive rebound rate |
+| trb% | Total rebound rate |
+| ast% | Assist rate |
+| stl% | Steal rate |
+| blk% | Block rate |
+| tov% | Turnover rate |
+| usg% | Usage rate |
+| ortg | Offensive rating |
+| drtg | Defensive rating |
+
+---
+
+### 🧠 Merged Game Features
+
+| Feature | Description |
+|---------|-------------|
+| team_x | Team name (from base schedule) |
+| team_y | Team name (from merged opponent data) |
+| team_opp | Opponent team name |
+| team_opp_next_x | Opponent’s next game team |
+| date_next | Date of opponent’s next game |
+| home | 1 if home game, 0 if away |
+| home_next | Whether next game is at home |
+| total | Vegas total points projection |
+| won | 1 if game was won, 0 otherwise |
+| target | 1 if next game was won, 0 otherwise |
+| rest_days | Days since last game |
+
+---
+
+### 🔁 Rolling & Merged Feature Explanation
+
+Suffixes like `_10_x` or `_10_y` mean the stat is a **rolling 10-game average**. These are created for both the team and its opponent and are critical for capturing momentum and recent form.
+
+Max versions (`_max`, `_max_10_x`, etc.) capture standout performances, while `_opp` and `_opp_10_y` columns let the model consider what kinds of opponents teams are facing.
 
 ---
