@@ -45,8 +45,14 @@ def get_odds():
 @app.post("/predict")
 async def predict(request: Request):
     body = await request.json()
-    home = body["home_team"]
-    away = body["visitor_team"]
-    date = body["date"]
-    winner = predictMatchup({"home_team": home, "visitor_team": away, "date": date})
-    return {"winner": winner}
+    games = body.get("games", [])
+
+    predictions = []
+    for game in games:
+        winner = predictMatchup(game)
+        predictions.append({
+            **game,
+            "prediction": winner
+        })
+
+    return {"predictions": predictions}
