@@ -7,7 +7,7 @@ def get_ml_features():
         'ft', 'ft%', 'fta', 'ftr',
         'orb', 'orb%', 'orb_max', 'ortg',
         'pf', 'pts', 'stl', 'stl%', 'tov', 'trb', 'ts%',
-        'usg%', 'usg%_max', 'usg%_opp',
+        'usg%', 'usg%_max', 'usg%_opp', 'rest_days',
         'home' 
     ]
 

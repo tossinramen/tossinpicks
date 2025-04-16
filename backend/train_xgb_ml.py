@@ -3,7 +3,7 @@ import pandas as pd
 import xgboost as xgb
 import joblib
 import os
-from backend.features import get_ml_features
+from features import get_ml_features
 
 features = get_ml_features()
 
@@ -12,9 +12,11 @@ db_path = os.path.join("data", "nba_games.db")
 conn = sqlite3.connect(db_path)
 
 
+quoted_features = [f'"{col}"' for col in features + ['target']]
+
 query = f"""
-    SELECT {', '.join(features + ['target'])}
-    FROM games
+    SELECT {', '.join(quoted_features)}
+    FROM nba_games
     WHERE target IS NOT NULL
 """
 df = pd.read_sql_query(query, conn)
