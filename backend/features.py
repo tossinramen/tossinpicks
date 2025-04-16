@@ -45,7 +45,9 @@ def get_ml_features():
         '3p_opp_10_y',
         'usg%_opp_10_y',
         '+/-_max_opp_10_y',
-        'target_10_y'
+        'target_10_y',
+        'rest_days',
+        'home',
     ]
 
 def get_ou_features():
