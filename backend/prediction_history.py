@@ -18,17 +18,17 @@ CREATE TABLE IF NOT EXISTS prediction_history (
 )
 """)
 
-conn.commit()
-conn.close()
 
+cursor.execute("""
+CREATE UNIQUE INDEX IF NOT EXISTS unique_game
+ON prediction_history (date, home_team, away_team)
+""")
+
+...
 
 def log_prediction_to_history_db(date, home_team, away_team, prediction):
-    print(f"📝 Logging to DB: {date} | {home_team} vs {away_team} -> {prediction}")
-    conn = sqlite3.connect(db_path)
-    cursor = conn.cursor()
+    ...
     cursor.execute("""
-        INSERT INTO prediction_history (date, home_team, away_team, prediction)
+        INSERT OR IGNORE INTO prediction_history (date, home_team, away_team, prediction)
         VALUES (?, ?, ?, ?)
     """, (date, home_team, away_team, prediction))
-    conn.commit()
-    conn.close()
