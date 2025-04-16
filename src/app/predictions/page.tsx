@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { block } from 'million/react';
 import Header from '@/components/Header';
 import Sidebar from '@/components/Sidebar';
 
@@ -15,7 +14,7 @@ interface Game {
   prediction?: string;
 }
 
-const PredictionsPage = block(function PredictionsPage() {
+export default function PredictionsPage() {
   const [gamesByDate, setGamesByDate] = useState<Record<string, Game[]>>({});
   const [activeSport, setActiveSport] = useState('NBA');
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -25,45 +24,36 @@ const PredictionsPage = block(function PredictionsPage() {
   };
 
   useEffect(() => {
-    const fetchGames = async () => {
+    const fetchGamesAndPredictions = async () => {
       try {
         const res = await fetch('/api/schedule');
         const data = await res.json();
         const gamesList = data.data || [];
-
-        // Fetch all predictions in parallel
-        const predictions = await Promise.all(
-          gamesList.map((game: Game) =>
-            fetch('/api/predict', {
-              method: 'POST',
-              body: JSON.stringify({
-                home_team: game.home_team.full_name,
-                visitor_team: game.visitor_team.full_name,
-                date: game.date,
-              }),
-              headers: { 'Content-Type': 'application/json' },
-            })
-              .then((res) => res.json())
-              .then((result) => ({ ...game, prediction: result.winner }))
-              .catch(() => ({ ...game, prediction: 'Error' }))
-          )
-        );
-
-        // Group games by date
+  
+      
+        const predRes = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/predict`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ games: gamesList }),
+        });
+  
+        const predictionResults = await predRes.json(); 
+  
+        
         const grouped: Record<string, Game[]> = {};
-        for (const game of predictions) {
+        for (const game of predictionResults.predictions) {
           const dateKey = new Date(game.date).toISOString().split('T')[0];
           if (!grouped[dateKey]) grouped[dateKey] = [];
           grouped[dateKey].push(game);
         }
-
+  
         setGamesByDate(grouped);
       } catch (err) {
-        console.error('Failed to load NBA schedule or predictions:', err);
+        console.error('❌ Error loading predictions:', err);
       }
     };
-
-    fetchGames();
+  
+    fetchGamesAndPredictions();
   }, []);
 
   return (
@@ -113,6 +103,4 @@ const PredictionsPage = block(function PredictionsPage() {
       </div>
     </div>
   );
-});
-
-export default PredictionsPage;
+}

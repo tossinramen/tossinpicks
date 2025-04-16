@@ -1,6 +1,8 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from sbrscrape import Scoreboard
+from backend.predict_matchup import predictMatchup
+
 
 app = FastAPI()
 
@@ -39,3 +41,12 @@ def get_odds():
     sb = Scoreboard(sport="NBA")
     games = sb.games
     return games
+
+@app.post("/predict")
+async def predict(request: Request):
+    body = await request.json()
+    home = body["home_team"]
+    away = body["visitor_team"]
+    date = body["date"]
+    winner = predictMatchup({"home_team": home, "visitor_team": away, "date": date})
+    return {"winner": winner}
