@@ -23,6 +23,7 @@ conn.close()
 
 
 def log_prediction_to_history_db(date, home_team, away_team, prediction):
+    print(f"📝 Logging to DB: {date} | {home_team} vs {away_team} -> {prediction}")
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
     cursor.execute("""

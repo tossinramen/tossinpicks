@@ -3,6 +3,7 @@ import joblib
 import pandas as pd
 import sqlite3
 from .features import get_ml_features
+from backend.prediction_history import log_prediction_to_history_db
 
 
 model = joblib.load("backend/xgb_model.pkl")
@@ -54,4 +55,5 @@ def predictMatchup(data: dict) -> str:
     preds = model.predict(sample)
     winner = home_team if preds[0] == 1 else visitor_team
     print(f"✅ Predicted winner: {winner}")
+    log_prediction_to_history_db(date, home_team, visitor_team, winner)
     return winner
