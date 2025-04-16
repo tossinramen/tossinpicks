@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { block } from 'million/react';
 import Header from '@/components/Header';
 import Sidebar from '@/components/Sidebar';
 
@@ -14,7 +15,7 @@ interface Game {
   prediction?: string;
 }
 
-export default function PredictionsPage() {
+const PredictionsPage = block(function PredictionsPage() {
   const [gamesByDate, setGamesByDate] = useState<Record<string, Game[]>>({});
   const [activeSport, setActiveSport] = useState('NBA');
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -30,23 +31,27 @@ export default function PredictionsPage() {
         const data = await res.json();
         const gamesList = data.data || [];
 
-        for (const game of gamesList) {
-          const res = await fetch('/api/predict', {
-            method: 'POST',
-            body: JSON.stringify({
-              home_team: game.home_team.full_name,
-              visitor_team: game.visitor_team.full_name,
-              date: game.date,
-            }),
-            headers: { 'Content-Type': 'application/json' },
-          });
+        // Fetch all predictions in parallel
+        const predictions = await Promise.all(
+          gamesList.map((game: Game) =>
+            fetch('/api/predict', {
+              method: 'POST',
+              body: JSON.stringify({
+                home_team: game.home_team.full_name,
+                visitor_team: game.visitor_team.full_name,
+                date: game.date,
+              }),
+              headers: { 'Content-Type': 'application/json' },
+            })
+              .then((res) => res.json())
+              .then((result) => ({ ...game, prediction: result.winner }))
+              .catch(() => ({ ...game, prediction: 'Error' }))
+          )
+        );
 
-          const result = await res.json();
-          game.prediction = result.winner;
-        }
-
+        // Group games by date
         const grouped: Record<string, Game[]> = {};
-        for (const game of gamesList) {
+        for (const game of predictions) {
           const dateKey = new Date(game.date).toISOString().split('T')[0];
           if (!grouped[dateKey]) grouped[dateKey] = [];
           grouped[dateKey].push(game);
@@ -108,4 +113,6 @@ export default function PredictionsPage() {
       </div>
     </div>
   );
-}
+});
+
+export default PredictionsPage;
