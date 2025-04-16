@@ -4,7 +4,7 @@ This dictionary explains the engineered features used in the final model trainin
 
 ---
 
-## Feature Descriptions
+## Features
 
 | Feature Name          | Description |
 |-----------------------|-------------|
